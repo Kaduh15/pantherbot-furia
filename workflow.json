@@ -1,0 +1,1612 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1760,
+        1500
+      ],
+      "id": "f96fb91f-2e83-4d63-8995-3635b488725f",
+      "name": "Telegram Trigger",
+      "webhookId": "0aa01f1d-1f9f-45be-b24f-fd4cd2a7bc83",
+      "credentials": {
+        "telegramApi": {
+          "id": "Xwuuqhu6Y1ULfS3S",
+          "name": "PantherBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=👋 Fala, FURIOSO!\n\nBem-vindo ao universo da FURIA! 🐾  \nAqui você interage, responde quizzes, ganha pontos e acompanha tudo que tá rolando com o time e com os creators.\n\n🎯 Comandos disponíveis:\n\n/quiz – Responda uma pergunta e ganhe pontos  \n/meuspontos – Veja quantos pontos você já tem  \n/ranking – Veja quem tá dominando o topo da comunidade  \n/ultimaspartidas – Veja os resultados mais recentes dos nossos times  \n/replays – Acesse os links das últimas partidas pra reassistir tudo  \n/perfil – Descubra que tipo de fã FURIOSO você é\n\n🔥 Cada interação te deixa mais perto de recompensas exclusivas.  \nMostre que corre com a Pantera e bora pro topo! #SomosFURIA\n",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -440,
+        2000
+      ],
+      "id": "4f4e9494-421b-4f88-a4e6-0984e9d0b89d",
+      "name": "mensagens de boas-vindas",
+      "webhookId": "a473bd8d-ab72-4b55-bd99-277898c52afa",
+      "credentials": {
+        "telegramApi": {
+          "id": "Xwuuqhu6Y1ULfS3S",
+          "name": "PantherBot"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -220,
+        2000
+      ],
+      "id": "c5864203-8701-48e7-986b-289203527b62",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "questions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $('Banco - Buscar usuario').item.json.answering_question }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -440,
+        200
+      ],
+      "id": "4ec88720-872c-4283-8e06-005eff0963de",
+      "name": "Supabase2",
+      "credentials": {
+        "supabaseApi": {
+          "id": "y9DOfGpq902kLNI5",
+          "name": "Supabase PantherBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8980054d-3643-4741-b607-197a40f2cb4f",
+              "name": "isReply",
+              "value": "={{ !!$json.message.reply_to_message }}",
+              "type": "boolean"
+            },
+            {
+              "id": "b150a3e5-243b-4f6f-8bca-a7f10f3fe03b",
+              "name": "chatId",
+              "value": "={{ $json.message.chat.id }}",
+              "type": "string"
+            },
+            {
+              "id": "433a1179-3a24-405c-b281-c32d5e1dcd82",
+              "name": "username",
+              "value": "={{ $json.message.chat.username }}",
+              "type": "string"
+            },
+            {
+              "id": "765bc8db-0867-4d70-b24b-2f291f4a7097",
+              "name": "text",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1540,
+        1500
+      ],
+      "id": "01031121-74a8-4387-aee0-75dd7634552c",
+      "name": "Mapea a mensagem"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "questions",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "={{ $json.filtro }}"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -220,
+        600
+      ],
+      "id": "80c55f1f-e34e-4d8c-9353-4f506642b8d4",
+      "name": "Busca Perguntas",
+      "credentials": {
+        "supabaseApi": {
+          "id": "y9DOfGpq902kLNI5",
+          "name": "Supabase PantherBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const perguntasRespondidas = $('Banco - Buscar usuario').first().json.questions_answered\nconst perguntas = $input.all()\n\nconst perguntasNaoRespondidas = perguntas.filter(({json}) => {\n  return !perguntasRespondidas.includes(json.id)\n})\n\nconst perguntaEscolhida = perguntasNaoRespondidas[Math.floor(Math.random() * perguntasNaoRespondidas.length)]\n\nreturn perguntaEscolhida;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        600
+      ],
+      "id": "468fc192-775f-4d0b-b9cb-767d84aea78d",
+      "name": "Sortea pergnta nao respondida",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Mapea a mensagem').item.json.chatId }}",
+        "text": "=🧠 Quiz FURIOSO\n\n{{ $json.question }}?\n\n1️⃣ {{ $json.option_1 }}\n2️⃣ {{ $json.option_2 }}\n3️⃣ {{ $json.option_3 }}\n\nResponda com o número da alternativa correta (1, 2 ou 3) pra ganhar pontos! 🔥\n",
+        "replyMarkup": "forceReply",
+        "forceReply": {
+          "force_reply": true
+        },
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        600
+      ],
+      "id": "e2fb1a37-8c4e-4cef-8954-a0825c2c832b",
+      "name": "Envia Pergunta",
+      "webhookId": "b90f46ee-73ec-4a78-a07a-f26f413359ba",
+      "credentials": {
+        "telegramApi": {
+          "id": "Xwuuqhu6Y1ULfS3S",
+          "name": "PantherBot"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        440,
+        0
+      ],
+      "id": "fc036641-5da6-4163-ad26-3117c2af609a",
+      "name": "No Operation, do nothing2"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Mapea a mensagem').item.json.chatId }}",
+        "text": "💥 Ops! Dessa vez você errou...\n\nMas não desanima! Cada tentativa te deixa mais perto de dominar tudo sobre a FURIA.  \nBora tentar de novo? Manda um /quiz pra continuar jogando e subir no ranking! 🚀",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        400
+      ],
+      "id": "2306c9c4-061f-42b8-8ff0-74af1a7920b8",
+      "name": "Resposta Errada",
+      "webhookId": "1844f389-1c7e-4494-909f-f36db368a8c5",
+      "credentials": {
+        "telegramApi": {
+          "id": "Xwuuqhu6Y1ULfS3S",
+          "name": "PantherBot"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        440,
+        400
+      ],
+      "id": "66e82cdb-69ff-4d71-8777-c8f543f3918d",
+      "name": "No Operation, do nothing3"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Mapea a mensagem').item.json.chatId }}",
+        "text": "🎯 Acertou na mira, FURIOSO!\n\nVocê mandou bem demais e garantiu +10 pontos no ranking! 🔥  \nContinue jogando pra desbloquear seu perfil de fã e mostrar que corre com a Pantera de verdade. 🐾\n\nManda um /quiz pra próxima!",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        200
+      ],
+      "id": "9a0f77ee-75cb-4f1e-9929-e11ebf5801be",
+      "name": "Resposta Certa",
+      "webhookId": "1844f389-1c7e-4494-909f-f36db368a8c5",
+      "credentials": {
+        "telegramApi": {
+          "id": "Xwuuqhu6Y1ULfS3S",
+          "name": "PantherBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id_telegram",
+              "condition": "eq",
+              "keyValue": "={{ $('Mapea a mensagem').item.json.chatId }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "answering_question",
+              "fieldValue": "={{ null }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        220,
+        400
+      ],
+      "id": "80c18925-2e2a-41bf-997d-8109ad5b93b8",
+      "name": "Reseta pergunta",
+      "credentials": {
+        "supabaseApi": {
+          "id": "y9DOfGpq902kLNI5",
+          "name": "Supabase PantherBot"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        660,
+        200
+      ],
+      "id": "7b6c428e-e1d2-4dfa-9748-04924e4d8ea2",
+      "name": "No Operation, do nothing4"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "📋 Menu FURIOSO\n\nEscolha uma opção para continuar sua jornada:\n\n🧠 /quiz – Responder uma pergunta e ganhar pontos  \n📊 /meuspontos – Ver sua pontuação atual  \n🏆 /ranking – Ver o ranking dos fãs mais engajados  \n🎮 /ultimaspartidas – Ver os resultados recentes da FURIA  \n📺 /replays – Reassistir as últimas partidas  \n🧬 /perfil – Descobrir que tipo de fã FURIOSO você é\n\n🐾 Cada interação conta pontos! Bora mostrar que você corre com a Pantera!",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -440,
+        800
+      ],
+      "id": "069f157e-299c-4e18-b870-9fa20385c9ba",
+      "name": "mensagens de boas-vindas2",
+      "webhookId": "a473bd8d-ab72-4b55-bd99-277898c52afa",
+      "credentials": {
+        "telegramApi": {
+          "id": "Xwuuqhu6Y1ULfS3S",
+          "name": "PantherBot"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -220,
+        800
+      ],
+      "id": "a443a808-1633-4b49-836b-04bdb4354a83",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -220,
+        1800
+      ],
+      "id": "caf52eb8-a5ee-4b93-86de-66e58ce07723",
+      "name": "No Operation, do nothing5"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=🤔 Não entendi o que você quis dizer...\n\nMas tá tudo certo! Aqui estão algumas opções que você pode usar:\n\n/quiz – Responder uma pergunta e ganhar pontos  \n/meuspontos – Ver sua pontuação atual  \n/ranking – Ver o ranking dos fãs mais engajados\n/ultimaspartidas – Ver os últimos jogos da FURIA\n/replays – Acessar os links das partidas gravadas\n\n🐾 Corre com a Pantera e aproveita tudo que o bot tem pra te oferecer!",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -440,
+        1800
+      ],
+      "id": "e7a12968-34dd-47c6-8c54-bb60daa9e4aa",
+      "name": "mensagens de nao identificada",
+      "webhookId": "a473bd8d-ab72-4b55-bd99-277898c52afa",
+      "credentials": {
+        "telegramApi": {
+          "id": "Xwuuqhu6Y1ULfS3S",
+          "name": "PantherBot"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -220,
+        1000
+      ],
+      "id": "1b7359c9-d1ac-4aab-8eb5-67c66640834a",
+      "name": "No Operation, do nothing6"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=📊 Seus pontos, FURIOSO:\n\nVocê tem atualmente **{{ $('Banco - Buscar usuario').item.json.points }} pontos** acumulados! 🔥  \nQuanto mais você interagir, mais pontos você ganha.\n\n✨ Lembre-se:\n+10 pontos por quiz respondido corretamente  \n+20 pontos ao compartilhar com um amigo  \n+Pontos extras por interações especiais no bot\n\nQuer aumentar sua pontuação agora? Manda um /quiz e mostra que você tá no corre com a Pantera! 🐾\n",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -440,
+        1000
+      ],
+      "id": "d1ef54b3-2508-41ee-9d47-2a3079a028c0",
+      "name": "mensagens de pontos",
+      "webhookId": "a473bd8d-ab72-4b55-bd99-277898c52afa",
+      "credentials": {
+        "telegramApi": {
+          "id": "Xwuuqhu6Y1ULfS3S",
+          "name": "PantherBot"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        660,
+        600
+      ],
+      "id": "24b0b1f7-73ed-4598-91e0-e0bbff829250",
+      "name": "No Operation, do nothing7"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        220,
+        1400
+      ],
+      "id": "e4eb5d40-64ba-41df-9574-392cb7b5a6fb",
+      "name": "No Operation, do nothing8"
+    },
+    {
+      "parameters": {
+        "jsCode": "const usuario = $('Banco - Buscar usuario').first().json\n\nconst idsRespondidas = usuario?.questions_answered || []\n\nconst idsFormatados = idsRespondidas.map(id => `\"${id}\"`).join(',')\n\nconst filtro = `id=not.in.(${idsFormatados})`\n\nreturn [{\n  json: {\n    filtro\n  }\n}]\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -440,
+        600
+      ],
+      "id": "503d187c-46fb-47e0-a4aa-51ee520e7f00",
+      "name": "Filtro - Perguntas não respondidas"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "0ba5a97a-2bb2-4556-9e23-4aaffe669c69",
+                    "leftValue": "^(1|2|3)$",
+                    "rightValue": "={{ $('Telegram Trigger').item.json.message.text }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notRegex"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Resposta Invaida"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ +$('Telegram Trigger').item.json.message.text }}",
+                    "rightValue": "={{ $json.correct_option }}",
+                    "operator": {
+                      "type": "number",
+                      "operation": "equals"
+                    },
+                    "id": "a4f95273-4fce-4e5a-b829-f916d62152d8"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Resposta Correta"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -220,
+        200
+      ],
+      "id": "7174c12d-5f3f-46b8-97f4-a8f92dfdb5e4",
+      "name": "Switch - Avalia resposta"
+    },
+    {
+      "parameters": {
+        "jsCode": "const usuario  = $('Banco - Buscar usuario').first().json\nconsole.log(usuario)\n\nconst perguntasRespondidas = usuario?.questions_answered || []\n\nperguntasRespondidas.push($('Supabase2').first().json.id)\n\nreturn { perguntasRespondidas };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        200
+      ],
+      "id": "adae3664-14a9-419b-932f-fd8097aef029",
+      "name": "Logica - Adiciona pergunta respondida"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id_telegram",
+              "condition": "eq",
+              "keyValue": "={{ $('Mapea a mensagem').item.json.chatId }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "answering_question",
+              "fieldValue": "={{ null }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ],
+      "id": "5eb57f7a-03af-4016-b524-f7765fa6dfd4",
+      "name": "Banco - Limpa resposta invalida",
+      "credentials": {
+        "supabaseApi": {
+          "id": "y9DOfGpq902kLNI5",
+          "name": "Supabase PantherBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id_telegram",
+              "condition": "eq",
+              "keyValue": "={{ $('Mapea a mensagem').item.json.chatId }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "answering_question",
+              "fieldValue": "={{ null }}"
+            },
+            {
+              "fieldId": "points",
+              "fieldValue": "={{ $('Banco - Buscar usuario').item.json.points + 10 }}"
+            },
+            {
+              "fieldId": "questions_answered",
+              "fieldValue": "={{ $json.perguntasRespondidas }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        440,
+        200
+      ],
+      "id": "4fe5c003-b7f9-4183-94a3-e511ea845e92",
+      "name": "Banco - Atualiza acerto",
+      "credentials": {
+        "supabaseApi": {
+          "id": "y9DOfGpq902kLNI5",
+          "name": "Supabase PantherBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "users",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id_telegram",
+              "condition": "eq",
+              "keyValue": "={{ $('Mapea a mensagem').item.json.chatId }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "answering_question",
+              "fieldValue": "={{ $('Sortea pergnta nao respondida').item.json.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        440,
+        600
+      ],
+      "id": "18908fde-76db-497e-a710-b67eb6530dfe",
+      "name": "Banco - Salva pergunta pendente",
+      "retryOnFail": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "y9DOfGpq902kLNI5",
+          "name": "Supabase PantherBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const usuarios = $input.all()\n\nlet mensagem = '🏆 Ranking FURIOSO – TOP 5\\n\\n';\n\nusuarios.forEach((usuario, index) => {\n  mensagem += `${index + 1}. ${usuario.json.username || \"Usuário\"} – ${usuario.json.points} pontos\\n`;\n});\n\nmensagem += '\\n🔁 Responda mais quizzes com /quiz para subir no ranking!';\n\nreturn [{mensagem: mensagem}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -220,
+        1200
+      ],
+      "id": "d004830c-418e-4bab-9eba-1b731ea5f818",
+      "name": "Mensagem - Monta ranking"
+    },
+    {
+      "parameters": {
+        "jsCode": "const partidas = $input.all()\nconsole.log(partidas)\nlet mensagem = '🎮 Últimas partidas da FURIA\\n\\n'\n\npartidas.forEach(({ json }) => {\n  const data = new Date(json.date).toLocaleDateString('pt-BR')\n  mensagem += `🗓️ ${data}\\n📌 ${json.title}\\n📊 Placar: ${json.scoreboard}\\n\\n`\n})\n\nmensagem += '⚡ Manda /replays pra ver os links das partidas completas!'\n\nreturn { mensagem };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -220,
+        1400
+      ],
+      "id": "605c9b16-ff56-4f3f-8e7a-438991f25a11",
+      "name": "Mensagem - Monta ultimas partidas"
+    },
+    {
+      "parameters": {
+        "jsCode": "const partidas = $input.all()\nlet mensagem = '📺 Replays das últimas partidas:\\n\\n'\n\npartidas.forEach(({ json }, index) => {\n  mensagem += `${index + 1}. ${json.title} – [Assistir](${json.replay_url})\\n`\n})\n\nmensagem += '\\n⚡ Manda /quiz pra ganhar pontos agora!'\n\nreturn { mensagem }\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -220,
+        1600
+      ],
+      "id": "379e584a-ea25-41bd-8625-8a761d1795af",
+      "name": "Mensagem - Monta replays"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id}}",
+        "text": "={{ $json.mensagem }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        1200
+      ],
+      "id": "145c0157-a1e7-4aa1-9ab8-76607469bdde",
+      "name": "Bot - Envia ranking",
+      "webhookId": "7f33186e-89a8-46ea-ba39-3f03cdf22dd4",
+      "credentials": {
+        "telegramApi": {
+          "id": "Xwuuqhu6Y1ULfS3S",
+          "name": "PantherBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id}}",
+        "text": "={{ $json.mensagem }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        1400
+      ],
+      "id": "1205ec68-768a-43ac-87de-12366e90f6e6",
+      "name": "Bot - Envia ultimas partidas",
+      "webhookId": "7f33186e-89a8-46ea-ba39-3f03cdf22dd4",
+      "credentials": {
+        "telegramApi": {
+          "id": "Xwuuqhu6Y1ULfS3S",
+          "name": "PantherBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Mapea a mensagem').item.json.chatId }}",
+        "text": "👀 Eita, resposta inválida!\n\nVocê precisa escolher uma das opções enviadas.  \nResponda com 1️⃣, 2️⃣ ou 3️⃣ pra registrar sua resposta corretamente.\n\n💡 Se tiver perdido a pergunta, digita /quiz de novo pra tentar outra!\n\nBora mostrar que é FURIOSO de verdade! 🐾",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e87577bd-e66b-4c55-b422-da5b0e00e19b",
+      "name": "Bot - Resposta invalida",
+      "webhookId": "1844f389-1c7e-4494-909f-f36db368a8c5",
+      "credentials": {
+        "telegramApi": {
+          "id": "Xwuuqhu6Y1ULfS3S",
+          "name": "PantherBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').first().json.message.chat.id}}",
+        "text": "={{ $json.mensagem }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        1600
+      ],
+      "id": "8ff6f0d8-c0c4-461d-9740-1c15b38bd089",
+      "name": "Bot - Envia replays",
+      "webhookId": "7f33186e-89a8-46ea-ba39-3f03cdf22dd4",
+      "credentials": {
+        "telegramApi": {
+          "id": "Xwuuqhu6Y1ULfS3S",
+          "name": "PantherBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Banco - Buscar usuario').item.json.answering_question }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "number",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "f9ea9ee5-340d-4b6a-a1cd-90c137d99dd1"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Resposta do quiz"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b26c076f-81f0-4037-bb47-3493a16144ae",
+                    "leftValue": "={{ $('Mapea a mensagem').item.json.text }}",
+                    "rightValue": "/quiz",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Quiz"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4b3bc2b0-b50a-4737-8d94-a639b5988486",
+                    "leftValue": "={{ $('Mapea a mensagem').item.json.text }}",
+                    "rightValue": "/menu",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Menu"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "90131ac5-9dad-4fe8-a588-17454571d0c2",
+                    "leftValue": "={{ $('Mapea a mensagem').item.json.text }}",
+                    "rightValue": "/meuspontos",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Meus Pontos"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d8ee26ef-83d8-4cee-bb07-87010e246246",
+                    "leftValue": "={{ $('Mapea a mensagem').item.json.text }}",
+                    "rightValue": "/ranking",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Ranking"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "043e4e55-8c87-4b53-bb64-258396d50c4e",
+                    "leftValue": "={{ $('Mapea a mensagem').item.json.text }}",
+                    "rightValue": "/ultimaspartidas",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Ultimas Pertidas"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "64ce28ba-deb3-4505-826c-70f5dc5ed771",
+                    "leftValue": "={{ $('Mapea a mensagem').item.json.text }}",
+                    "rightValue": "/replays",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Replays"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -660,
+        995
+      ],
+      "id": "dccf406b-4ec7-4153-8dba-1bde89677851",
+      "name": "Switch - Comandos e respostas"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id_telegram",
+              "keyValue": "={{ $json.chatId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1320,
+        1500
+      ],
+      "id": "4190c999-8955-4613-8be3-5e58522069e3",
+      "name": "Banco - Buscar usuario",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "y9DOfGpq902kLNI5",
+          "name": "Supabase PantherBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2df78158-7b0a-437d-9148-1c45f8c71fda",
+              "name": "hasUser",
+              "value": "={{ !!$json.id_telegram || false }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {
+          "dotNotation": false
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1100,
+        1500
+      ],
+      "id": "1f5a08fe-b4dc-44a9-a080-61da92edc180",
+      "name": "Logica - Usuario existe"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "796c663b-ea62-4355-8567-84a19bebf80a",
+              "leftValue": "={{ $json.hasUser }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -880,
+        1500
+      ],
+      "id": "fe059f3d-7142-4858-97b7-d1673aa88d2f",
+      "name": "If - Usuario existe"
+    },
+    {
+      "parameters": {
+        "tableId": "users",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "id_telegram",
+              "fieldValue": "={{ $('Mapea a mensagem').item.json.chatId }}"
+            },
+            {
+              "fieldId": "username",
+              "fieldValue": "={{ $('Mapea a mensagem').item.json.username }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -660,
+        2000
+      ],
+      "id": "8795c5ab-15f7-446e-b24b-0c947cc02474",
+      "name": "Banco - Registra usuario",
+      "notesInFlow": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "y9DOfGpq902kLNI5",
+          "name": "Supabase PantherBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "users",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "select=username,points&order=points.desc,username.asc&limit=5"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -440,
+        1200
+      ],
+      "id": "7099381b-18ab-4282-936b-33a81a846d5c",
+      "name": "Banco - busca Ranking",
+      "credentials": {
+        "supabaseApi": {
+          "id": "y9DOfGpq902kLNI5",
+          "name": "Supabase PantherBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "matches",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "select=title,replay_url&order=date.desc&limit=3"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -440,
+        1600
+      ],
+      "id": "02bf6a41-a57b-43eb-b4c9-5994312babd7",
+      "name": "Banco - Busca replays",
+      "credentials": {
+        "supabaseApi": {
+          "id": "y9DOfGpq902kLNI5",
+          "name": "Supabase PantherBot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "matches",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "select=title,scoreboard,date&order=date.desc&limit=3"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -440,
+        1400
+      ],
+      "id": "ffb40bae-db52-46a5-a6f7-1733c3e71a52",
+      "name": "Banco - Busca ultimas partidas",
+      "credentials": {
+        "supabaseApi": {
+          "id": "y9DOfGpq902kLNI5",
+          "name": "Supabase PantherBot"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Mapea a mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mensagens de boas-vindas": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase2": {
+      "main": [
+        [
+          {
+            "node": "Switch - Avalia resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mapea a mensagem": {
+      "main": [
+        [
+          {
+            "node": "Banco - Buscar usuario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca Perguntas": {
+      "main": [
+        [
+          {
+            "node": "Sortea pergnta nao respondida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sortea pergnta nao respondida": {
+      "main": [
+        [
+          {
+            "node": "Envia Pergunta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Envia Pergunta": {
+      "main": [
+        [
+          {
+            "node": "Banco - Salva pergunta pendente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resposta Errada": {
+      "main": [
+        [
+          {
+            "node": "Reseta pergunta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resposta Certa": {
+      "main": [
+        [
+          {
+            "node": "Logica - Adiciona pergunta respondida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reseta pergunta": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mensagens de boas-vindas2": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mensagens de nao identificada": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mensagens de pontos": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtro - Perguntas não respondidas": {
+      "main": [
+        [
+          {
+            "node": "Busca Perguntas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch - Avalia resposta": {
+      "main": [
+        [
+          {
+            "node": "Bot - Resposta invalida",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resposta Certa",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resposta Errada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Logica - Adiciona pergunta respondida": {
+      "main": [
+        [
+          {
+            "node": "Banco - Atualiza acerto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Banco - Limpa resposta invalida": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Banco - Atualiza acerto": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Banco - Salva pergunta pendente": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem - Monta ranking": {
+      "main": [
+        [
+          {
+            "node": "Bot - Envia ranking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem - Monta ultimas partidas": {
+      "main": [
+        [
+          {
+            "node": "Bot - Envia ultimas partidas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem - Monta replays": {
+      "main": [
+        [
+          {
+            "node": "Bot - Envia replays",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bot - Envia ultimas partidas": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bot - Resposta invalida": {
+      "main": [
+        [
+          {
+            "node": "Banco - Limpa resposta invalida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch - Comandos e respostas": {
+      "main": [
+        [
+          {
+            "node": "Supabase2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Filtro - Perguntas não respondidas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "mensagens de boas-vindas2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "mensagens de pontos",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Banco - busca Ranking",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Banco - Busca ultimas partidas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Banco - Busca replays",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "mensagens de nao identificada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Banco - Buscar usuario": {
+      "main": [
+        [
+          {
+            "node": "Logica - Usuario existe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Logica - Usuario existe": {
+      "main": [
+        [
+          {
+            "node": "If - Usuario existe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If - Usuario existe": {
+      "main": [
+        [
+          {
+            "node": "Switch - Comandos e respostas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Banco - Registra usuario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Banco - Registra usuario": {
+      "main": [
+        [
+          {
+            "node": "mensagens de boas-vindas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Banco - busca Ranking": {
+      "main": [
+        [
+          {
+            "node": "Mensagem - Monta ranking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Banco - Busca replays": {
+      "main": [
+        [
+          {
+            "node": "Mensagem - Monta replays",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Banco - Busca ultimas partidas": {
+      "main": [
+        [
+          {
+            "node": "Mensagem - Monta ultimas partidas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "fe920a63-f664-4b88-a135-0009227e6ea2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7f082148204e9e7ba1f22ea0ad54bed2e864032c02bc78459510f960c91df886"
+  },
+  "id": "s5cOsiR8NIj1Cd53",
+  "tags": []
+}
