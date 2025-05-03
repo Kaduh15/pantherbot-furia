@@ -111,7 +111,7 @@ Durante o desenvolvimento do PantherBot, aprendi e pratiquei:
 
 ## 🖼️ Recursos Visuais
 
-![Imagem do fluxo](./docs/pantherbot-workflow.png)
+![Imagem do fluxo](./pantherbot-workflow.png)
 
 ---
 
